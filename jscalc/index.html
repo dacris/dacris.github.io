@@ -1,0 +1,51 @@
+<html>
+<head><title>JavaScript Calculator</title></head>
+<style type="text/css">
+#script {
+    width: 100%; height: 80px;
+}
+#submit {
+    display: block;
+}
+#result {
+    margin-top: 15px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+#wrapper {
+    width: 50%;
+    margin: 0 auto;
+}
+body {
+    font-family: Georgia, Arial, sans-serif;
+}
+h1 {
+    font-size: large;
+}
+h2 {
+    font-size: medium;
+}
+a {
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+</style>
+<script type="text/javascript">
+window.docalc = function() {
+    document.getElementById("result").innerHTML = eval(document.getElementById("script").value);
+}
+</script>
+<body>
+<div id="wrapper">
+<h1>JavaScript 'Calculator'</h1>
+<h2>(C) 2014 Dacris Software</h2>
+<textarea id="script"></textarea>
+<button id="submit" onclick="window.docalc()">Calculate</button>
+<div id="result">(Click 'Calculate')</div>
+<footer><a href="../index.html%3Fp=310.html" target="_blank">More apps @ dacris.com</a></footer>
+</div>
+</body>
+</html>

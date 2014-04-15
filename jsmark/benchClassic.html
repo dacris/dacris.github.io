@@ -1,0 +1,76 @@
+<html>
+<head>
+<title>JS Benchmark</title>
+<link type="text/css" rel="stylesheet" href="jsbench.css" />
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script type="text/javascript" src="jsbench.js"></script>
+<script type="text/javascript">
+var result = [];
+var threadCnt = 0; //reserved for future use
+var nThreads = 1; //reserved for future use
+
+function cpuTestClassic()
+{
+	var x;
+	var y;
+	//trig functions
+	x = 0.5;
+	y = 0.5;
+	for(var i = 0; i < 7000; i++)
+	{
+		x = Math.atan(2.0*Math.sin(x)*Math.cos(x)/(Math.cos(x+y)+Math.cos(x-y)-1.0));
+		y = Math.atan(2.0*Math.sin(y)*Math.cos(y)/(Math.cos(x+y)+Math.cos(x-y)-1.0));
+	}
+	//standard functions
+	x = 0.75;
+	for(var i = 0; i < 20000; i++)
+	{
+		x = Math.sqrt(Math.exp(Math.log(x)/0.5));
+	}
+	//procedure calls
+	var p = function(a, b, c, d, e) { var f = e * a + b / c; return f; };
+	for(var i = 0; i < 180000; i++)
+	{
+		p(x, y, 1.0, p, i);
+	}
+	return 65;
+}
+
+function runTest()
+{
+	result[threadCnt++] = (new jsBench()).run(cpuTestClassic);
+}
+
+function displayResult()
+{
+	var r = {};
+	r.suggestHTML = "";
+	r.unit = "MIPS";
+	r.value = 0;
+	for(var i = 0; i < result.length; i++)
+	{
+		r.value += result[i].value;
+	}
+	$("#result").html("<h1>Result</h1><h2>" + r.value + " " + r.unit + "</h2>" + r.suggestHTML);
+	$.getJSON("http://www.dacris.com/Data.ashx?test=" + r.value + "&unit=" + r.unit);
+}
+
+$(document).ready(function()
+{
+	runTest();
+	displayResult();
+});
+</script>
+</head>
+<body>
+<div id="result"><h2>Running test...</h2></div>
+<h1>What to Expect</h1>
+<table>
+<tr><td>10000 MIPS</td><td>Top notch</td></tr>
+<tr><td>5000 MIPS</td><td>Great result</td></tr>
+<tr><td>1000 MIPS</td><td>Excellent for tablets, tolerable for PCs</td></tr>
+<tr><td>500 MIPS</td><td>Great for tablets, slow for PCs</td></tr>
+<tr><td>100 MIPS</td><td>Needs improvement</td></tr>
+</table>
+</body>
+</html>

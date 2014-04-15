@@ -1,0 +1,53 @@
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="chrome=1" />
+<title>JS Benchmark</title>
+<link type="text/css" rel="stylesheet" href="jsbench.css" />
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script type="text/javascript" src="jsbench.js"></script>
+<script type="text/javascript">
+function cpuTestModern()
+{
+	var M = 10000;
+	var s = "lorem ipsum hello world";
+	var sa = [];
+	for(var i = 0; i < M; i++)
+	{
+		sa[i] = s + " > " + i;
+	}
+	for(var i = 0; i < sa.length; i++)
+	{
+		if(sa[i] == "lorem ipsm test")
+		{
+			;
+		}
+		if(i > 0)
+		{
+			sa[i] = sa[i - 1];
+		}
+	}
+	return (M * s.length * 2.0) / 1000000.0;
+}
+
+$(document).ready(function()
+{
+	var r = (new jsBench()).run(cpuTestModern);
+	r.unit = "MVOPS"; //vector operations per second
+	r.suggestHTML = "";
+	$("#result").html("<h1>Result</h1><h2>" + r.value.toFixed(2) + " " + r.unit + "</h2>" + r.suggestHTML);
+	$.getJSON("http://www.dacris.com/Data.ashx?test=" + r.value.toFixed(2) + "&unit=" + r.unit);
+});
+</script>
+</head>
+<body>
+<div id="result"><h1>Running test...</h1></div>
+<h1>What to Expect</h1>
+<table>
+<tr><td>500 MVOPS</td><td>Top notch</td></tr>
+<tr><td>200 MVOPS</td><td>Great result</td></tr>
+<tr><td>90 MVOPS</td><td>Excellent for tablets, tolerable for PCs</td></tr>
+<tr><td>30 MVOPS</td><td>Great for tablets, slow for PCs</td></tr>
+<tr><td>10 MVOPS</td><td>Needs improvement</td></tr>
+</table>
+</body>
+</html>
