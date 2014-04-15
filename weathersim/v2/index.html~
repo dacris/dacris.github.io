@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html>
+<!--
+  Created using jsbin.com
+  Source can be edited via http://jsbin.com/EmaRawa/1/edit
+-->
+<head>
+  <meta charset=utf-8 />
+  <title>Dacris Weather Grid v2</title>
+
+<style id="jsbin-css">
+body {
+  padding: 0;
+  margin: 0;
+  font-family: Verdana, Geneva, sans-serif;
+}
+
+.wrapper {
+  width: 50%;
+  margin: 0 auto;
+}
+
+#angle {
+  text-align: left;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.03em;
+  font-size: 2em;
+}
+
+h1 { 
+  margin: 0.167em 0 0;
+  padding-left: 0.5em;
+  text-align: left; 
+}
+
+h2 {
+  font-size: 1.25em;
+}
+
+small {
+  margin-top: 1em;
+  display: block;
+  font-style: italic;
+  font-size: 0.667em;
+}
+
+p em {
+  font-style: none;
+}
+
+@media screen and (max-width: 1200px) {
+  .wrapper {
+    width: 80%;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .wrapper {
+    width: auto;
+    margin: 0;
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .wrapper {
+    text-align: center;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 0;
+    padding-left: 0;
+    font-size: 1.8em;
+  }
+  
+  #next > div {
+    float none;
+    width: auto;
+  }
+}
+
+
+
+
+
+
+
+
+</style>
+</head>
+<body class="wrapper">
+    <h1><img src="thelogo.jpg" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;"><span style="color:#cc0000;">D</span>acris <span style="color:#669900;">W</span>eather <span style="color:#0033cc;">G</span>rid v2</div></h1>
+    <pre>Still(!) dedicated to your mother.</pre>
+    <h2><pre>&copy; by Dacris Software v2.014 Alpha</pre></h2><div>
+  Layer: <select id="layerName" name="layerName" value="Surface"><option value="Surface">Surface</option><option value="LowerAir" selected="selected">Surface Air</option><option value="MidAir">850mb Air</option><option value="UpperAir">500mb Air</option></select>
+  <button id="master" name="master" value="Click Me" onclick="main();">Run</button>
+  <div id="container"></div>
+  <div id="map"></div></div>
+<script>function tabulate(data, columns, cid, isFlatArray) {
+
+var container = document.getElementById(cid || "container");
+var columnScript = "";
+var bodyRows = "";
+for (var k = 0; k < columns.length; k++) {
+columnScript += "<th>" + columns[k] + "</th>";
+}
+for (var k = 0; k < data.length; k++) {
+var rowScript = "";
+if (!isFlatArray && data[k].length) {
+  for (var l = 0; l < data.length; l++) {
+    rowScript += "<td>" + data[k][l] + "</td>";
+  }
+}
+else if(isFlatArray) {
+  for (var l = 0; l < columns.length; l++) {
+    rowScript += "<td>" + data[l*k] + "</td>";
+  }
+}
+else {
+  for (key in data[k]) {
+    rowScript += "<td>" + data[k][key] + "</td>";
+  }
+}
+bodyRows += "<tr>" + rowScript + "</tr>";
+}
+container.innerHTML = "<table><thead><tr>" + columnScript + "</tr></thead><tbody>" + bodyRows + "</tbody></table>";
+    
+    return container;
+}
+
+var locations;
+var locationMeta;
+
+var terrain = { "Greenland": {"Polygon": [{y:59,x:-10},{y:59,x:-105},{y:69,x:-135},{y:69,x:-180},{y:91,x:-180},{y:91,x:180},{y:73,x:180},{y:73,x:20},{y:59,x:-10}], "Surface": "Icecap"},
+"Eurasia": {"Polygon": [{y:58,x:-6},{y:34,x:-6},{y:37,x:45},{y:50,x:45},{y:50,x:100},{y:50,x:180},{y:72,x:180},{y:72,x:20},{y:58,x:-6}], "Surface": "Forest"},
+"Deserteast": {"Polygon": [{y:50,x:45},{y:50,x:100},{y:12,x:80},{y:12,x:32},{y:18,x:32},{y:18,x:-15},{y:34,x:-10},{y:38,x:45},{y:50,x:45}], "Surface": "Desert"},
+"Australia": {"Polygon": [{y:-10,x:125},{y:-39,x:100},{y:-44,x:160},{y:-10,x:140},{y:-10,x:125}], "Surface": "Desert"},
+"Eastasia": {"Polygon": [{y:20,x:60},{y:50,x:100},{y:50,x:140},{y:-10,x:140},{y:-10,x:90},{y:0,x:75},{y:20,x:60}], "Surface": "Forest"},
+"Westafrica": {"Polygon": [{y:18,x:-15},{y:18,x:32},{y:-10,x:45},{y:-38,x:15},{y:6,x:0},{y:18,x:-15}], "Surface": "Forest"},
+"America": {"Polygon": [{y:58,x:-105},{y:58,x:-55},{y:26,x:-75},{y:-6,x:-30},{y:-53,x:-75},{y:-21,x:-75},{y:-6,x:-85},{y:6,x:-80},{y:22,x:-105},{y:58,x:-105}], "Surface": "Forest"},
+"Desertwest": {"Polygon": [{y:41,x:-135},{y:58,x:-105},{y:22,x:-105},{y:22,x:-120},{y:41,x:-135}], "Surface": "Desert"},
+"Alaska": {"Polygon": [{y:68,x:-180},{y:68,x:-105},{y:58,x:-105},{y:41,x:-135},{y:58,x:-145},{y:60,x:-160},{y:58,x:-175},{y:68,x:-180}], "Surface": "Forest"},
+"Antarctica": {"Polygon": [{y:-59,x:-60},{y:-65,x:-180},{y:-91,x:-180},{y:-91,x:180},{y:-65,x:180},{y:-59,x:-60}], "Surface": "Icecap"} };
+
+var surfaceData = { "Water": { Color: [0, 40, 160], ClearAlbedo: 0.07, CloudyAlbedo: 0.35, Clouds: 0.72, Emissivity: 0.96, Depth: 4.5, Humidity: 1.0, Density: 1000 },
+"Icecap": { Color: [225, 255, 252], ClearAlbedo: 0.55, CloudyAlbedo: 0.62, Clouds: 0.45, Emissivity: 0.91, Depth: 3.0, Humidity: 0.5, Density: 917 },
+"Forest": { Color: [40, 160, 0], ClearAlbedo: 0.11, CloudyAlbedo: 0.39, Clouds: 0.77, Emissivity: 0.94, Depth: 0.8, Humidity: 0.2, Density: 1300 },
+"Desert": { Color: [225, 192, 0], ClearAlbedo: 0.28, CloudyAlbedo: 0.43, Clouds: 0.11, Emissivity: 0.84, Depth: 0.8, Humidity: 0.1, Density: 1800 }
+};
+
+function point_in_poly(poly, pt){
+	for(var c = false, i = -1, l = poly.length, j = l - 1; ++i < l; j = i)
+		((poly[i].y <= pt.y && pt.y < poly[j].y) || (poly[j].y <= pt.y && pt.y < poly[i].y))
+		&& (pt.x < (poly[j].x - poly[i].x) * (pt.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x)
+		&& (c = !c);
+	return c;
+}
+
+function determineTerrain(lng, lat) {
+  for (poly in terrain) {
+    var hit = point_in_poly(terrain[poly].Polygon, {x: lng, y: lat});
+    if (hit) {
+        return terrain[poly].Surface;
+    }
+  }
+  return "Water";
+}
+
+function getGrid() {
+  locations = {};
+  locationMeta = { Columns: [], Latitudes: [], N: 6, W: 12 };
+  var minLng = -180;
+  var maxLng = 180;
+  var N = locationMeta.N;
+  var W = locationMeta.W;
+  var k = N;
+  //use asin(k/N) for N equal area sections
+  for (k = N; k >= -N; k--) {
+    for (var lng = minLng; lng < maxLng; lng += (maxLng - minLng) / W) {
+      if (!locations[lng]) {
+        locations[lng] = {};
+      }
+      if (k == N) {
+        locationMeta.Columns.push(lng);
+      }
+      if (k < 0) {
+        var lat = Math.round(100*(-Math.asin(-k/N) * 180.0 / Math.PI))/100;
+        locations[lng][lat] = {Lat: lat, Lng: lng, Surface: determineTerrain(lng, lat)};
+        if (lng == minLng) {
+          locationMeta.Latitudes.push(lat);
+        }
+      }
+      else {
+        var lat = Math.round(100*Math.asin(k/N) * 180.0 / Math.PI)/100;
+        locations[lng][lat] = {Lat: lat, Lng: lng, Surface: determineTerrain(lng, lat)};
+        if (lng == minLng) {
+          locationMeta.Latitudes.push(lat);
+        }
+      }
+    }
+  }
+  locationMeta.Columns.push("Lat");
+}
+
+var dat, JD, UT, offset, dIM, DEC, EOT, longit, htb;
+var dtFlux = 1371;
+var solarFlux = [1400, 1406, 1396, 1378, 1368, 1354, 1344, 1340, 1351, 1366, 1373, 1388];
+var attn = 0.85;
+var condensation = 0.15;
+var albd_surf = 0.14;
+var albd_clds = 0.39;
+var albd = 0.63 * albd_clds + 0.37 * albd_surf;
+var emsv_wet = 0.98;
+var emsv_dry_min = 0.75;
+var emsv_dry_max = 0.85;
+var emsv_dry_avg = 0.5 * (emsv_dry_min + emsv_dry_max);
+var initialize = true;
+
+// climate model:
+// http://my.net-link.net/~malexan/Climate-Model.htm
+var co2conc = 0.039;
+
+// energy balance:
+// http://www.srh.noaa.gov/jetstream/atmos/energy_balance.htm
+
+/*function greenhouse (dewpoint, pressure) {
+  return ((dewpoint > 0) ? (1.0-Math.exp(-0.4634*Math.exp(18.382-5294.0/dewpoint)-3.52*co2conc)) : 0);
+}*/
+
+// our new greenhouse model (emissivity modeled is downward forced radiation of atmosphere ie eA = F_greenhouse/sig*Tsurf^4)
+// ranges from 0.45 @ -60C dewpoint to 1.0 @ 45C dewpoint
+function greenhouse (dewpoint, pressure) {
+    //contributions to emissivity at STP, 300 ppm CO2
+    var ozone = 0.043;//at -40C, it is higher at higher T, up to 0.068 at 20C
+    var ch4 = 0.035;
+    var other = 0.02;
+    var co2 = Math.min(0.25, 0.185 * (2-Math.log(co2conc)/Math.log(0.03)));//at 20C
+    var h2o = 0.387;
+    return other+ozone+ch4+(co2+h2o*1.1650493*Math.pow(1.00483354, Math.min(dewpoint, 343)-273))*(1+Math.log(pressure)/Math.log(1013));
+}
+
+function blackbody (temp) {
+  var sc = 5.67e-8;
+  return sc * temp*temp*temp*temp;
+}
+
+function JulianDay (day, month, year, UT){
+  if (year<1900) year=year+1900;
+  if (month<=2) {month=month+12; year=year-1;}
+  B = Math.floor(year/400.0) - Math.floor(year/100.0)  + Math.floor(year/4.0);
+  A = 365.0*year - 679004.0;
+  JD= A + B + Math.floor(30.6001*(month+1)) + day + UT/24.0;
+  JD = JD + 2400000.5;
+}
+
+function RightAscension(T) {	
+	var K = Math.PI/180.0;				
+	var L, M, C, lambda, RA, eps, delta, theta;							
+	L = sunL(T);		
+	M = 357.52910 + 35999.05030*T - 0.0001559*T*T - 0.00000048*T*T*T;
+	M = M % 360;		
+	if (M<0) M = M + 360;				
+	C = (1.914600 - 0.004817*T - 0.000014*T*T)*Math.sin(K*M);
+	C = C + (0.019993 - 0.000101*T)*Math.sin(K*2*M);
+	C = C + 0.000290*Math.sin(K*3*M);		
+	theta = L + C; // true longitude of the Sun						
+	eps = EPS(T);				
+	eps = eps + 0.00256*Math.cos(K*(125.04 - 1934.136*T));		
+	lambda = theta - 0.00569 - 0.00478*Math.sin(K*(125.04 - 1934.136*T)); // apparent longitude of the Sun
+	RA = Math.atan2(Math.cos(K*eps)*Math.sin(K*lambda), Math.cos(K*lambda));				
+	RA = RA/K;
+	if (RA<0) RA = RA + 360.0;			
+	delta = Math.asin(Math.sin(K*eps)*Math.sin(K*lambda));
+	delta = delta/K;		
+	DEC = delta;				
+	return RA;		
+}
+
+function sunL(T){
+	var L = 280.46645 + 36000.76983*T + 0.0003032*T*T;	
+	L = L % 360;		
+	if (L<0) L = L + 360;
+	return L;			
+}
+
+function deltaPSI(T){
+	var K = Math.PI/180.0;
+	var deltaPsi, omega, LS, LM;			
+	LS = sunL(T);	
+	LM = 218.3165 + 481267.8813*T;		
+	LM = LM % 360;	
+	if (LM<0) LM = LM + 360;		
+	omega = 125.04452 - 1934.136261*T + 0.0020708*T*T + T*T*T/450000;
+	deltaPsi = -17.2*Math.sin(K*omega) - 1.32*Math.sin(K*2*LS) - 0.23*Math.sin(K*2*LM) + 0.21*Math.sin(K*2*omega);
+	deltaPsi = deltaPsi/3600.0;		
+	return deltaPsi;	
+}
+	
+function EPS(T) {
+	var K = Math.PI/180.0;
+	var LS = sunL(T);
+	var LM = 218.3165 + 481267.8813*T;	
+	var eps0 =  23.0 + 26.0/60.0 + 21.448/3600.0 - (46.8150*T + 0.00059*T*T - 0.001813*T*T*T)/3600;
+	var omega = 125.04452 - 1934.136261*T + 0.0020708*T*T + T*T*T/450000;		
+	var deltaEps = (9.20*Math.cos(K*omega) + 0.57*Math.cos(K*2*LS) + 0.10*Math.cos(K*2*LM) - 0.09*Math.cos(K*2*omega))/3600;
+	return eps0 + deltaEps;	
+}
+	
+function eot(day, month, year, UT) {
+  JulianDay(day, month, year, UT);
+  var K = Math.PI/180.0;
+  var T = (JD - 2451545.0) / 36525.0;
+  var eps = EPS(T);
+  var RA = RightAscension(T);
+  var LS = sunL(T);
+  var deltaPsi = deltaPSI(T);
+  var E = LS - 0.0057183 - RA + deltaPsi*Math.cos(K*eps);
+  if (E>5) E = E - 360.0;
+  E = E*4; // deg. to min
+  E = Math.round(1000*E)/1000;
+  return E;		
+}
+
+function zenith_angle(lat, hr) {
+  var z = Math.asin(Math.sin(lat*Math.PI/180.0) * Math.sin(DEC*Math.PI/180.0) + Math.cos(lat*Math.PI/180.0) * Math.cos(DEC*Math.PI/180.0) * Math.cos((hr - 180.0)*Math.PI/180.0))*180.0/Math.PI;
+  return Math.round(100*z)/100;
+}
+
+function zeropfx(min) {
+  return min >= 0 ? " " + ((min < 10 ? ("0"+min) : min)) : ((min < 10 ? ("0"+min) : min));
+}
+
+function angle_hour(hr) {
+  var min = (hr * 4) % 60;
+  return zeropfx(Math.floor(hr / 15)) + "h" + zeropfx(min);
+}
+
+function bg_rad(za) {
+  return (za + 18) > 0 ? Math.sin((za + 18)*Math.PI/180.0) * dtFlux/30 : 0;
+}
+
+function total_rad(hr, location) {
+  var za = zenith_angle(location.Lat, hr + location.Lng);
+  return bg_rad(za) + (za > 0 ? Math.sin(za*Math.PI/180.0)*dtFlux : 0);
+}
+
+function getSoilTempChange(flux, time, opts) {
+  //humidity e.g. 0.18
+  //density e.g. 1300 kg/m^3
+  //flux e.g. 25 W/m^2
+  //depth e.g. 1.0 m
+  //time for the change e.g. 600 sec
+  //returns degK
+  var temp = opts.Temp;
+  return flux * time / ((837 * opts.Density + (temp < 272 ? 2.19e6 * 0.917 : 4.19e6) * opts.Humidity) * opts.Depth);
+}
+
+function getWaterTempChange(flux, time, opts) {
+  //flux e.g. 25 W/m^2
+  //depth e.g. 1.5 m
+  //time for the change e.g. 600 sec
+  //returns degK
+  var temp = opts.Temp;
+  return (temp > 272) ? (flux * time / (4.19e6 * opts.Depth)) :
+         flux * time / (0.917 * 2.19e6 * opts.Depth); //ice
+}
+
+function getSurfaceTempChange(flux, time, opts) {
+  if(opts.Type == "Water" || opts.Type == "Icecap") {
+    return getWaterTempChange(flux, time, { Temp: opts.Temp, Depth: surfaceData[opts.Type].Depth });
+  }
+  else {
+    return getSoilTempChange(flux, time, { Temp: opts.Temp, Depth: surfaceData[opts.Type].Depth, Humidity: surfaceData[opts.Type].Humidity, Density: surfaceData[opts.Type].Density });
+  }
+}
+
+function getAirTempChange(flux, time, opts) {
+  //flux e.g. 25 W/m^2
+  //depth e.g. 20 m
+  //time for the change e.g. 600 sec
+  //returns degK
+  var temp = opts.Temp;
+  var airProperties = [{temp: 203, density: 1.79},
+                       {temp: 223, density: 1.53},
+                       {temp: 243, density: 1.45},
+                       {temp: 263, density: 1.34},
+                       {temp: 283, density: 1.23},
+                       {temp: 303, density: 1.18},
+                       {temp: 323, density: 1.09},
+                       {temp: 343, density: 1.01}
+                      ];
+  var quadrant = Math.round((temp - 203) / 20);
+  var density = 2.1;
+  if (quadrant >= airProperties.length) {
+    density = 0.95;
+  }
+  else if (quadrant >= 0) {
+    density = airProperties[quadrant].density;
+  }
+  
+  return flux * time / (1006 * density * opts.Pressure * opts.Depth);
+}
+
+function computeSnowCover(location) {
+  location.SnowCover = 0;
+  if (location.Layers.Surface.Temp < 275) {
+    location.SnowCover = 0.50;
+  }
+  if (location.Layers.Surface.Temp < 272) {
+    location.SnowCover = 0.90;
+  }
+}
+
+function colorTemp(temp) {
+  var clr = "#330033";
+  if(temp >= 208) {
+    clr = "#990099";
+  }
+  if(temp >= 233) {
+    clr = "#6600cc";
+  }
+  if(temp >= 248) {
+    clr = "#3333cc";
+  }
+  if(temp >= 258) {
+    clr = "#3366cc";
+  }
+  if(temp >= 266) {
+    clr = "#66ccff";
+  }
+  if(temp >= 271) {
+    clr = "#00cc99";
+  }
+  if(temp >= 277) {
+    clr = "#00cc00";
+  }
+  if(temp >= 283) {
+    clr = "#00cc00";
+  }
+  if(temp >= 289) {
+    clr = "#99cc00";
+  }
+  if(temp >= 296) {
+    clr = "#cc9900";
+  }
+  if(temp >= 304) {
+    clr = "#cc6600";
+  }
+  if(temp >= 311) {
+    clr = "#cc0000";
+  }
+  return "<div style=\"background-color: " + clr + "; padding: 4px; font-weight: bold;\">" + (Math.floor(temp - 273)) + "</div>";
+}
+
+function surfaceAlbedo (surface) {
+  //TODO - consider effect of temporary ice/snow on surface albedo
+  return surfaceData[surface].ClearAlbedo * (1.0 - surfaceData[surface].Clouds) + surfaceData[surface].CloudyAlbedo * surfaceData[surface].Clouds;
+}
+
+function surfacePower (p, surface) {
+  return p * (1.0 - surfaceAlbedo(surface));
+}
+
+function surfaceFluxFunction(lng, lat, layer, time) {
+  var location = locations[lng][lat];
+  var solarFlux = total_rad(time / 240.0, location);
+  var I = surfacePower(solarFlux, location.Surface);
+  var tAir = location.Layers.UpperAir.Temp;
+  var emsAir = greenhouse(tAir, location.Layers.UpperAir.Pressure);
+  var pIn = I + surfaceData[location.Layers.Surface.Type].Emissivity * emsAir * blackbody(tAir);
+  var pOut = surfaceData[location.Layers.Surface.Type].Emissivity * blackbody(location.Layers.Surface.Temp);
+  return pIn - pOut;
+}
+
+function airFluxFunction(lng, lat, layer, time) {
+  var location = locations[lng][lat];
+  var emsAir = greenhouse(location.Layers[layer].Temp, location.Layers[layer].Pressure);
+  var pIn = surfaceData[location.Layers.Surface.Type].Emissivity * emsAir * blackbody(location.Layers.Surface.Temp);
+  var pOut = 2 * (1 - 0.5 * emsAir) * blackbody(location.Layers[layer].Temp);
+  return pIn - pOut;
+}
+
+//TODO - this may be far too simplistic - geostrophic winds and Coriolis effect missing
+function columnMixing(timeStep, mixCoef, locations) {
+//TODO - vertical mixing OK.. do the same for horizontal (we should have 100% mixing at 90, down to 0+M at equator)
+// --THEN we can increase water depth to hold more heat over winter
+  // locations assumed to be equal area grid
+  var totalTime = (10000/1200)*3600; //seconds to go 50% from 0.5 of pole to pole (v = 2400km/h)
+  for (lng in locations) {
+    var avgTemp = { LAT: 0, MAT: 0, UAT: 0 };
+    var cnt = 0;
+    for (lat in locations[lng]) {
+        avgTemp.LAT += locations[lng][lat].Layers.LowerAir.Temp;
+        avgTemp.MAT += locations[lng][lat].Layers.MidAir.Temp;
+        avgTemp.UAT += locations[lng][lat].Layers.UpperAir.Temp;
+        cnt ++;
+    }
+    avgTemp.LAT = avgTemp.LAT / cnt;
+    avgTemp.MAT = avgTemp.MAT / cnt;
+    avgTemp.UAT = avgTemp.UAT / cnt;
+    for (lat in locations[lng]) {
+      var ldiff = -(locations[lng][lat].Layers.LowerAir.Temp - avgTemp.LAT);
+      var mdiff = -(locations[lng][lat].Layers.MidAir.Temp - avgTemp.MAT);
+      var udiff = -(locations[lng][lat].Layers.UpperAir.Temp - avgTemp.UAT);
+      ldiff = ldiff * timeStep * Math.abs(Math.sin(lat*Math.PI/180.0)) / totalTime;
+      mdiff = mdiff * timeStep * Math.abs(Math.sin(lat*Math.PI/180.0)) / totalTime;
+      udiff = udiff * timeStep * Math.abs(Math.sin(lat*Math.PI/180.0)) / totalTime;
+      locations[lng][lat].Layers.LowerAir.Temp += ldiff;
+      locations[lng][lat].Layers.MidAir.Temp += mdiff;
+      locations[lng][lat].Layers.UpperAir.Temp += udiff;
+    }
+  }
+}
+
+var j, t, dateTime, timer, stopButton;
+
+
+//TODO: do we want to port this to local calculations instead? (i.e. put a grid over 42.5N to 44.5N 80.5W to 78.5W and compute a few locations)
+// (since wind is not a big factor, OR is wind actually a big factor?)
+// (certainly, wind calculations would work better in local calc mode)
+// (we could compute wind transfers on a day-to-day basis instead of every 600 sec)
+
+//TODO: model deeper ground levels also (via conduction we take away heat from surface)
+function main() {
+  //TODO: draw map visualization (d3?)
+  if (initialize) {
+    getGrid(); //TODO: fill land type and elevation values
+    for (lng in locations) {
+      for (lat in locations[lng]) {
+          locations[lng][lat].Layers = { Surface: { Flux: 0, Type: locations[lng][lat].Surface, Temp: 269, FluxFunction: surfaceFluxFunction, TempChangeFunction: getSurfaceTempChange },
+UpperAir: { Flux: 0, Depth: 8000, Pressure: 0.50, Temp: 249, FluxFunction: airFluxFunction, TempChangeFunction: getAirTempChange },
+MidAir: { Flux: 0, Depth: 3000, Pressure: 0.85, Temp: 259, FluxFunction: airFluxFunction, TempChangeFunction: getAirTempChange },
+LowerAir: { Flux: 0, Depth: 300, Pressure: 0.95, Temp: 269, FluxFunction: airFluxFunction, TempChangeFunction: getAirTempChange } };
+      }
+    }
+    dateTime = new Date(2012, 11, 20);
+    eot(20, 11, 2012, 0);
+    dtFlux = solarFlux[dateTime.getMonth()];
+    t = 0;
+    j = 1;
+    stopButton = true;
+    initialize = false;
+  }
+  if (stopButton) {
+      document.getElementById("master").innerHTML = "Stop";
+      document.getElementById("master").onclick = function(e){clearTimeout(window.timer);document.getElementById("master").innerHTML="Run";document.getElementById("master").onclick = function(e){stopButton=true;main();};};
+      stopButton = false;
+  }
+  var mixingCoef = 0.01;
+  var timeStep = 600;
+  var dataGrid = [];
+  var locationGrid = [];
+  var selLayer = document.getElementById("layerName").value;//TODO put a combo box to pick layer
+  for (var lk = 0; lk < locationMeta.Latitudes.length; lk++) {
+      var lat = locationMeta.Latitudes[lk];
+      var locationData = {};
+      for (var lw = 0; lw < locationMeta.Columns.length - 1; lw++) {
+             var lng = locationMeta.Columns[lw];
+             computeSnowCover(locations[lng][lat]);
+             locations[lng][lat].TotalFlux = total_rad((t % 86400) / 240.0, locations[lng][lat]);
+             for (layerKey in locations[lng][lat].Layers) {
+                  locations[lng][lat].Layers[layerKey].Flux = locations[lng][lat].Layers[layerKey].FluxFunction(lng, lat, layerKey, t % 86400);
+                  locations[lng][lat].Layers[layerKey].Temp += locations[lng][lat].Layers[layerKey].TempChangeFunction(locations[lng][lat].Layers[layerKey].Flux, timeStep, locations[lng][lat].Layers[layerKey]);
+             }
+             locationData[lng] = colorTemp(locations[lng][lat].Layers[selLayer].Temp);
+      }
+      locationData["Lat"] = lat;
+      locationGrid.push(locationData);
+  }
+  dataGrid.push({Month: dateTime.getMonth(), Day: dateTime.getDate(), Dec: DEC,
+                          Time: (t + timeStep) % 86400});
+  if((t+timeStep) % 86400 == 0) {
+           dateTime = new Date(2012, 11, 20+j);
+           dtFlux = solarFlux[dateTime.getMonth()];
+           eot(dateTime.getDate(), dateTime.getMonth(), dateTime.getFullYear(), 0);
+           j++;
+  }
+  if ((t + timeStep) % 1800 == 0) {
+    columnMixing(1800, mixingCoef, locations);
+    tabulate(dataGrid, ["Month", "Day", "Dec", "Time"]);
+    tabulate(locationGrid, locationMeta.Columns, "map");
+  }
+  t = t + timeStep;
+  timer = setTimeout(function(){main()},10);
+}
+</script>
+</body>
+</html>
