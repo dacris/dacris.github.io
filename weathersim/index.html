@@ -50,8 +50,8 @@ p em {
 <body>
   
   <form class="wrapper" name="iform">
-    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v1.412x</div></h1>
-    <pre>A powerful idea. Dedicated to your mother. <a href="http://pubs.giss.nasa.gov/docs/2010/2010_Schmidt_etal_1.pdf" target="_blank">Greenhouse by Schmidt et al (2010, PDF)</a></pre>
+    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v1.9217</div></h1>
+    <pre>A powerful idea. Dedicated to the weather. <a href="http://pubs.giss.nasa.gov/docs/2010/2010_Schmidt_etal_1.pdf" target="_blank">Greenhouse by Schmidt et al (2010, PDF)</a></pre>
     <h2><pre>(C) Dacris Software</pre></h2>
     <div>
       <pre>CO2: <input name="co2" type="text" value="390" size="5" /> ppm (250 = pre-1900s)</pre>
@@ -84,6 +84,9 @@ p em {
 // v1.4114 - 1/13/2014 - circulation of water, partial underground layer implementation (STILL TOO COLD!)
 // v1.4115 - 1/15/2014 - atmosphere H2O now absorbs some shortwave (up to 25%), corrected excessive greenhouse effect by balancing energy equations, underground layer implementation OK
 // v1.4119 - 1/19/2014 - better greenhouse effect, rebalancing atmosphere, pressure calculations beginning (but not ready yet)
+// v1.7718 - 7/18/2017 - improved soil multi-layer heat transfer, more accurate extremes but seasons are off (spring too early)
+// v1.9130 - 1/30/2019 - changed snow albedo to be more reflective, improved multi-layer transfer (overall more accurate now)
+// v1.9217 - 2/17/2019 - redid total albedo calculation to be more accurate
 
 // (Future) - TODO - Add dynamic cloud cover computations, circulate the air and average out differences between land and water, pole and equator (advection !)
 
@@ -104,10 +107,10 @@ p500Layer: { Pressure: 0.50, Height: 2600.0, Altitude: 5600, Temp: 232, Dewpoint
 p250Layer: { Pressure: 0.25, Height: 4400.0, Altitude: 11300, Temp: 221, Dewpoint: 205, WindV: 0, MixingHeight: 0 }
 };
 var perihelionDate = new Date(2013, 1, 4);
-var surfaceData = { "Water": { Color: [0, 40, 160], Albedo: 0.08, Clouds: 0.72, Emissivity: 0.96, Temp: 288, Density: 0, Humidity: 1, Depth: 18.0 },
-"Icecap": { Color: [225, 255, 252], Albedo: 0.62, Clouds: 0.45, Emissivity: 0.92, Temp: 263, Density: 0, Humidity: 1, Depth: 1.75 },
-"Forest": { Color: [40, 160, 0], Albedo: 0.17, Clouds: 0.77, Emissivity: 0.92, Temp: 288, Density: 1300, Humidity: 0.25, Depth: 0.28 },
-"Desert": { Color: [225, 192, 0], Albedo: 0.26, Clouds: 0.16, Emissivity: 0.835, Temp: 288, Density: 1800, Humidity: 0, Depth: 0.35 }
+var surfaceData = { "Water": { Color: [0, 40, 160], Albedo: 0.11, Clouds: 0.72, Emissivity: 0.96, Temp: 288, Density: 0, Humidity: 1, Depth: 18.0 },
+"Icecap": { Color: [225, 255, 252], Albedo: 0.40, Clouds: 0.35, Emissivity: 0.92, Temp: 263, Density: 0, Humidity: 1, Depth: 1.75 },
+"Forest": { Color: [40, 160, 0], Albedo: 0.17, Clouds: 0.72, Emissivity: 0.92, Temp: 273, Density: 1300, Humidity: 0.1, Depth: 0.15 },
+"Desert": { Color: [225, 192, 0], Albedo: 0.26, Clouds: 0.16, Emissivity: 0.835, Temp: 288, Density: 1800, Humidity: 0, Depth: 0.15 }
 };
 
 // TODO - predict cloud cover %
@@ -150,9 +153,9 @@ function greenhouse_v2 (dewpoint) {
   var lapseAvgCO2 = 0.875; //87.5% or up to 70 km in atmosphere is a VERY SLOW lapse rate! (is this correct ??)
   var lapseAvgH2O = 0.07; //7% or up to 5.6 km in atmosphere
   var co2 = 0.18*(1-Math.exp(-1000*co2conc/1e6)); //0.7% at 15 ppm to 18% at 8000 ppm;
-	var vap = 0.31*(1-Math.exp(-1000*vapconc/1e6)); //1.5% at 210K 15 ppm at 0.02 mb to 31% at 285K 8000 ppm at 13.5 mb
-	var others = 0.065; // aerosols, CH4 (clouds included in vap)
-	var ozone = 0.036;
+  var vap = 0.31*(1-Math.exp(-1000*vapconc/1e6)); //1.5% at 210K 15 ppm at 0.02 mb to 31% at 285K 8000 ppm at 13.5 mb
+  var others = 0.065; // aerosols, CH4 (clouds included in vap)
+  var ozone = 0.036;
   return (1+co2)*(1+vap)*(1+others)*(1+ozone) - 1;
 }
 
@@ -188,8 +191,12 @@ function blackbody (temp) {
 // simplified with radiation hitting surface average = 237 W/m2 after albedo effects
 
 function surfaceAbsorptionVisible (surface) {
-  var albdAtm = 0.39 * surface.Clouds;
-  return (1.0 - albdAtm) * (1.0 - (1.0 - surface.Clouds) * (((surface.Temp < 271 && (surface.Type == "Water" || surface.Type == "Forest")) ? 0.37 : surface.Albedo)));
+  var snowAlbedo = 0.36;
+  var cloudAlbedo = 0.26;
+  var albdSrf = (surface.Temp < 276 && (surface.Type == "Water" || surface.Type == "Forest")) ? snowAlbedo : surface.Albedo;
+  var albdAtm = cloudAlbedo + (1.0 - cloudAlbedo) * albdSrf; //what radiation is not reflected by cloud is reflected by surface
+  var totalAlbedo = albdAtm * surface.Clouds + albdSrf * (1.0 - surface.Clouds);
+  return 1.0 - totalAlbedo;
 }
 
 function zenith_angle(lat, hrAngle, yearAngle) {
@@ -383,7 +390,6 @@ function do_calc() {
 
   document.getElementById("surface").innerHTML = "Surface Type: <strong>" + surface.Type + "</strong>";
   document.getElementById("avg1").innerHTML = "Average Total Heating: <strong>" + Math.floor(avg_total*100)/100 + "</strong> W/m2";
-  document.getElementById("avg2").innerHTML = "Average Surface Heating: <strong>" + Math.floor(avg_surface*100)/100 + "</strong> W/m2";
   
   var season_thres = [294, 288, 282, 278, 271, 264];
   var season = ["Tropical Summer (Low &gt;= 16C)", "Temperate Summer (Mean &gt;= 16C)", "Warm Tropical Winter (High &gt;= 16C)", "Cool Tropical Winter (Light Frosts, High 10C)", "Warm Temperate Winter (High 4C)", "Normal Winter (Mean = -6C)", "Frozen Solid (&lt; -10C)"];
@@ -425,7 +431,7 @@ function do_calc() {
   surface.DeepTemp = avg_annual_temp;
   var avg_surface_by_time = avg_surface;
   var airMixingTime = 5*86400;
-  var densityCoefficient = Math.sqrt(2); //average between top soil (1300 kg/m^3) and deep bedrock (2700 kg/m^3)
+  var densityCoefficient = 1.5; //average between top soil (1300 kg/m^3) and deep bedrock (2700 kg/m^3)
   //then do half of 5.5 months (82 days) at local daily flux
   //before even applying currents, we have to compute 'underground' layer for any solid-state surface which emits heavily during winter and absorbs slightly during summer
   //note - we could actually just use the water layer's emissions (avg annual) and absorb partially on the surface layer
@@ -434,10 +440,11 @@ function do_calc() {
     var localTimeStep = Math.floor((currentDate+dtOffset)*n_yr_steps/(2*Math.PI)) % n_yr_steps;
     avg_surface_by_time = surfaceAbsorptionVisible(surface) * solarFlux * climateIndex["d" + localTimeStep].PAvg;
     surface.Radiation = avg_surface_by_time + greenhouseRadiation(atmosphere.SurfaceLayer.Dewpoint, surface);
-    deltaW = surface.Radiation - surfaceLongwave() + undergroundLongwave() - surfaceLongwave();
+	var atmosphereLongwave = surface.Emissivity * blackbody(atmosphere.SurfaceLayer.Temp);
+    deltaW = surface.Radiation * (1/4) + undergroundLongwave() * (1/2) + atmosphereLongwave * (1/4) - surfaceLongwave();
     surface.Temp = surface.Temp + deltaW * time / surfaceHeatCapacity();
-    deltaW = surfaceLongwave() - undergroundLongwave() + deepUndergroundLongwave - undergroundLongwave();
-    surface.DeepTemp = surface.DeepTemp + deltaW * time / (surfaceHeatCapacity() * densityCoefficient * (7.0 / surface.Depth));
+    deltaW = surface.Radiation * (1/4) + deepUndergroundLongwave * (1/2) + surfaceLongwave() * (1/4) - undergroundLongwave();
+    surface.DeepTemp = surface.DeepTemp + deltaW * time / (surfaceHeatCapacity() * densityCoefficient * (21.0 / surface.Depth));
     computeAtmosphere(solarFlux * climateIndex["d" + localTimeStep].PAvg, time, true);
     // air currents
     //atmosphere.SurfaceLayer.Temp = atmosphere.SurfaceLayer.Temp * (1.0 - 2*time/airMixingTime) + (time/airMixingTime) * avg_annual_temp + (time/airMixingTime) * avg_planet_temp;
@@ -455,7 +462,8 @@ function do_calc() {
     var pcurrent = ivar * Math.max(0, Math.sin(zenith_angle(lat, (dt*time/86400)*2*Math.PI, currentDate)));
     var psurface = surfaceAbsorptionVisible(surface) * solarFlux * pcurrent;
     surface.Radiation = psurface + greenhouseRadiation(atmosphere.SurfaceLayer.Dewpoint, surface);
-    deltaW = surface.Radiation - surfaceLongwave() + undergroundLongwave() - surfaceLongwave();
+	var atmosphereLongwave = surface.Emissivity * blackbody(atmosphere.SurfaceLayer.Temp);
+    deltaW = surface.Radiation * (1/4) + undergroundLongwave() * (1/2) + atmosphereLongwave * (1/4) - surfaceLongwave();
     surface.Temp = surface.Temp + deltaW * time / surfaceHeatCapacity();
     computeAtmosphere(solarFlux * pcurrent, time, true);
     if (minTemp > surface.Temp) {
@@ -465,11 +473,14 @@ function do_calc() {
       maxTemp = surface.Temp;
     }
   }
+  //minTemp = maxTemp = surface.DeepTemp;
   document.getElementById("airmass").innerHTML = "Stable Air Mass Temp.: <strong>" + (Math.floor(atmosphere.SurfaceLayer.Temp) - 273) + "&deg;C</strong> / " + (Math.floor(atmosphere.p250Layer.Temp) - 273) + "&deg;C @ 250mb";
   document.getElementById("season").innerHTML = "Net Seasonal Regime: <strong>" + season[k] + "</strong>";
   document.getElementById("season_pic").innerHTML = "<img src=\"season/" + k + ".jpg\" alt=\"Season Pic\" />";
   document.getElementById("dailyrange").innerHTML = "Daily Surface Temp Range: <strong>" + Math.floor(minTemp - 273) + "&deg;C</strong> &mdash; <strong>" + Math.floor(maxTemp - 273) + "&deg;C</strong>";
   document.getElementById("pressure").innerHTML = "Surface Pressure: <strong>" + Math.floor(atmosphere.SurfaceLayer.Pressure*1013.25) + "</strong> mb";
+  avg_surface = surfaceAbsorptionVisible(surface) * avg_total;
+  document.getElementById("avg2").innerHTML = "Average Surface Heating: <strong>" + Math.floor(avg_surface*100)/100 + "</strong> W/m2";
 }
 </script>
 </body>
