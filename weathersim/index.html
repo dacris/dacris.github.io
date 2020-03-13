@@ -50,14 +50,14 @@ p em {
 <body>
   
   <form class="wrapper" name="iform">
-    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v1.9217</div></h1>
-    <pre>A powerful idea. Dedicated to the weather. <a href="http://pubs.giss.nasa.gov/docs/2010/2010_Schmidt_etal_1.pdf" target="_blank">Greenhouse by Schmidt et al (2010, PDF)</a></pre>
+    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v2.0219</div></h1>
+    <pre>A powerful idea. Dedicated to the weather. <a href="http://web.archive.org/web/20111022111918/http://pubs.giss.nasa.gov/docs/2010/2010_Schmidt_etal_1.pdf" target="_blank">Greenhouse by Schmidt et al (2010, PDF)</a></pre>
     <h2><pre>(C) Dacris Software</pre></h2>
     <div>
-      <pre>CO2: <input name="co2" type="text" value="390" size="5" /> ppm (250 = pre-1900s)</pre>
+      <pre>CO2: <input name="co2" type="text" value="390" size="5" /> ppm (275 = pre-1900s) (<a href="https://www.esrl.noaa.gov/gmd/ccgg/trends/weekly.html" target="_blank">Current Value</a>)</pre>
       <pre>Lat: <input name="lat" type="text" size="5" value="43.6" />&deg;N Lng: <input name="lng" type="text" size="5" value="-79.3" />&deg;E</pre>
-      <pre>Date:  <input size="4" name="dd" type="text" value="31" /><input size="4" name="mm" type="text" value="12" /><input size="4" name="yy" type="text" value="2013" /></pre>
-      <pre style="margin-top:-8px;">        Day          Month        Year</pre>
+      <pre>Date:  <input size="4" name="dd" type="text" value="31" /><input size="4" name="mm" type="text" value="12" /><input size="4" name="yy" type="text" value="2020" /></pre>
+      <pre style="margin-top:-8px;">        Day       Month      Year</pre>
     </div>
     <input type="button" value="Calculate" onclick="do_calc();" />
     <div id="season"></div>
@@ -87,6 +87,7 @@ p em {
 // v1.7718 - 7/18/2017 - improved soil multi-layer heat transfer, more accurate extremes but seasons are off (spring too early)
 // v1.9130 - 1/30/2019 - changed snow albedo to be more reflective, improved multi-layer transfer (overall more accurate now)
 // v1.9217 - 2/17/2019 - redid total albedo calculation to be more accurate
+// v2.0219 - 2/19/2020 - fixed an error in enthalpy calculation that was causing too rapid spring warming
 
 // (Future) - TODO - Add dynamic cloud cover computations, circulate the air and average out differences between land and water, pole and equator (advection !)
 
@@ -164,7 +165,7 @@ function enthalpy (temp, height) {
   var satVP = 100*6.11*Math.pow(10, (7.5 * (temp-273)) / (237.7 + (temp-273)));//Pascals
   var vapDensity = 0.00216 * satVP / temp;//100% humidity
   //returns J/m^2
-  return height * vapDensity * 1000.0 * (temp < 273 ? 334 : 2834);
+  return height * vapDensity * 1000.0 * (temp < 273 ? (334 + 2834) : 2834);
 }
 
 function greenhouseRadiation (dewpoint, surface) {
