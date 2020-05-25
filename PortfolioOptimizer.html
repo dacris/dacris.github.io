@@ -122,6 +122,11 @@ function calcProportion_nil(priceChange)
 	return 1.0;
 }
 
+function calcProportion_dca2pct(priceChange)
+{
+	return 1.0 + 0.02 / priceChange;
+}
+
 function calcPortfolio()
 {
 	var shares = 10;
@@ -129,7 +134,7 @@ function calcPortfolio()
 	portfolio.push(shares * prices[0]);
 	for (var i = 1; i < prices.length; i++)
 	{
-		var proportion = calcProportion_capped_fixed(prices[i] / prices[i - 1]);
+		var proportion = calcProportion_dca2pct(prices[i] / prices[i - 1]);
 		moneySpent += (shares * proportion - shares) * prices[i];
 		shares = shares * proportion;
 		portfolio.push(shares * prices[i]);
@@ -152,16 +157,16 @@ function calcPortfolio()
 <div><button onclick="calcPortfolio();">Calculate</button>
 <!-- Results
 
-Price Action	Ratio	SqrtRatio	SqrtSqrtRatio	Pow2Ratio	Fixed 2%	50%		Capped Sqrt		Capped Fixed 4%		Nil		Capped SqrtSqrt
-Up				418%	688%		868%			178%		1126%		757%	1272%			986%				1043%	1087%
-Sideways		57%		24%			11%				160%		5.3%		32%		42%				7.3%				0%		7.3%
-Down			-46%	-44%		-43%			-51%		-42%		-44%	-45%			-43%				-42%	-43%
+Price Action	Ratio	SqrtRatio	SqrtSqrtRatio	Pow2Ratio	Fixed 2%	50%		Capped Sqrt		Capped Fixed 4%		Nil		Capped SqrtSqrt	DCA 2%
+Up				418%	688%		868%			178%		1126%		757%	1272%			986%				1043%	1087%			1121%
+Sideways		57%		24%			11%				160%		5.3%		32%		42%				7.3%				0%		7.3%			6.7%
+Down			-46%	-44%		-43%			-51%		-42%		-44%	-45%			-43%				-42%	-43%			-43%
 
 For best results, SqrtRatio or SqrtSqrtRatio work at maximizing upside and limiting downside.
 
 Conclusions:
-- Dollar Cost Averaging is not that good. SQRT(DollarRatio) is better. Capped SQRT is best.
-- Fixed % is easier and has similar upside potential to SQRT.
+- Dollar Cost Averaging is not that good. Capped SQRT is best.
+- Fixed 2% is easier and has similar upside potential to capped SQRT.
 
 -->
 </body>
