@@ -52,7 +52,7 @@ function displayResult()
 		r.value += result[i].value;
 	}
 	$("#result").html("<h1>Result</h1><h2>" + r.value + " " + r.unit + "</h2>" + r.suggestHTML);
-	$.getJSON("http://www.dacris.com/Data.ashx?test=" + r.value + "&unit=" + r.unit);
+//	$.getJSON("http://www.dacris.com/Data.ashx?test=" + r.value + "&unit=" + r.unit);
 }
 
 $(document).ready(function()

@@ -35,7 +35,7 @@ $(document).ready(function()
 	r.unit = "MVOPS"; //vector operations per second
 	r.suggestHTML = "";
 	$("#result").html("<h1>Result</h1><h2>" + r.value.toFixed(2) + " " + r.unit + "</h2>" + r.suggestHTML);
-	$.getJSON("http://www.dacris.com/Data.ashx?test=" + r.value.toFixed(2) + "&unit=" + r.unit);
+//	$.getJSON("http://www.dacris.com/Data.ashx?test=" + r.value.toFixed(2) + "&unit=" + r.unit);
 });
 </script>
 </head>
