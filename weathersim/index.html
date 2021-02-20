@@ -88,6 +88,7 @@ p em {
 // v1.9130 - 1/30/2019 - changed snow albedo to be more reflective, improved multi-layer transfer (overall more accurate now)
 // v1.9217 - 2/17/2019 - redid total albedo calculation to be more accurate
 // v2.0219 - 2/19/2020 - fixed an error in enthalpy calculation that was causing too rapid spring warming
+// v2.1220 - 2/20/2021 - small adjustment to densityCoefficient increasing accuracy of spring warming
 
 // (Future) - TODO - Add dynamic cloud cover computations, circulate the air and average out differences between land and water, pole and equator (advection !)
 
@@ -432,7 +433,7 @@ function do_calc() {
   surface.DeepTemp = avg_annual_temp;
   var avg_surface_by_time = avg_surface;
   var airMixingTime = 5*86400;
-  var densityCoefficient = 1.5; //average between top soil (1300 kg/m^3) and deep bedrock (2700 kg/m^3)
+  var densityCoefficient = 1.875; //average between top soil (1300 kg/m^3) and deep bedrock (2700 kg/m^3)
   //then do half of 5.5 months (82 days) at local daily flux
   //before even applying currents, we have to compute 'underground' layer for any solid-state surface which emits heavily during winter and absorbs slightly during summer
   //note - we could actually just use the water layer's emissions (avg annual) and absorb partially on the surface layer
@@ -445,7 +446,7 @@ function do_calc() {
     deltaW = surface.Radiation * (1/4) + undergroundLongwave() * (1/2) + atmosphereLongwave * (1/4) - surfaceLongwave();
     surface.Temp = surface.Temp + deltaW * time / surfaceHeatCapacity();
     deltaW = surface.Radiation * (1/4) + deepUndergroundLongwave * (1/2) + surfaceLongwave() * (1/4) - undergroundLongwave();
-    surface.DeepTemp = surface.DeepTemp + deltaW * time / (surfaceHeatCapacity() * densityCoefficient * (21.0 / surface.Depth));
+    surface.DeepTemp = surface.DeepTemp + deltaW * time / (surfaceHeatCapacity() * densityCoefficient * (13.5 / surface.Depth));
     computeAtmosphere(solarFlux * climateIndex["d" + localTimeStep].PAvg, time, true);
     // air currents
     //atmosphere.SurfaceLayer.Temp = atmosphere.SurfaceLayer.Temp * (1.0 - 2*time/airMixingTime) + (time/airMixingTime) * avg_annual_temp + (time/airMixingTime) * avg_planet_temp;
