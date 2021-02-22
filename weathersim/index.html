@@ -50,7 +50,7 @@ p em {
 <body>
   
   <form class="wrapper" name="iform">
-    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v2.1220</div></h1>
+    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v2.1222</div></h1>
     <pre>A powerful idea. Dedicated to the weather. <a href="http://web.archive.org/web/20111022111918/http://pubs.giss.nasa.gov/docs/2010/2010_Schmidt_etal_1.pdf" target="_blank">Greenhouse by Schmidt et al (2010, PDF)</a></pre>
     <h2><pre>(C) Dacris Software</pre></h2>
     <div>
@@ -88,7 +88,7 @@ p em {
 // v1.9130 - 1/30/2019 - changed snow albedo to be more reflective, improved multi-layer transfer (overall more accurate now)
 // v1.9217 - 2/17/2019 - redid total albedo calculation to be more accurate
 // v2.0219 - 2/19/2020 - fixed an error in enthalpy calculation that was causing too rapid spring warming
-// v2.1220 - 2/20/2021 - small adjustment to densityCoefficient increasing accuracy of spring warming
+// v2.1222 - 2/22/2021 - small adjustment to densityCoefficient increasing accuracy of spring warming, move ref date for year start (solstice) to 12/24 instead of 12/21
 
 // (Future) - TODO - Add dynamic cloud cover computations, circulate the air and average out differences between land and water, pole and equator (advection !)
 
@@ -253,7 +253,7 @@ function daily_avg(yearAngle, lat) {
   var lr = lat*Math.PI/180.0;
   var horizon = -Math.tan(d)*Math.tan(lr);
   var w = Math.acos(horizon > 1 ? 1 : (horizon < -1 ? -1 : horizon)); //sunset_hr
-  var ivar = 1 + 0.035*Math.cos(yearAngle + timeAngle(new Date(2012, 12, 21), perihelionDate)); //annual variation of sunlight due to elliptical Earth orbit (perihelion == Jan. 4)
+  var ivar = 1 + 0.035*Math.cos(yearAngle + timeAngle(new Date(2012, 12, 24), perihelionDate)); //annual variation of sunlight due to elliptical Earth orbit (perihelion == Jan. 4)
   var p_avg = (ivar/Math.PI) * (w * Math.sin(lr) * Math.sin(d) + Math.cos(d) * Math.cos(lr) * Math.sin(w));
   return p_avg;
 }
@@ -378,12 +378,12 @@ function do_calc() {
   var climateIndex = {};
   var solarFlux = (5600/(Math.sqrt(4*42/10))); //~1366 W/m2 but ideal = 1400 W/m2 or 1/4 of 5600K surface temp
   for (angle = 0; angle < n_yr_steps; angle++) {
-    var i_var = 1 + 0.035*Math.cos(angle*2*Math.PI/n_yr_steps + timeAngle(new Date(2012, 12, 21), perihelionDate));
+    var i_var = 1 + 0.035*Math.cos(angle*2*Math.PI/n_yr_steps + timeAngle(new Date(2012, 12, 24), perihelionDate));
     climateIndex["d" + angle] = { PAvg: daily_avg(angle*2*Math.PI/n_yr_steps, lat) };
     p_avg_annual += (1/n_yr_steps) * climateIndex["d" + angle].PAvg;
   }
   //interpolate current date
-  var currentDate = timeAngle(new Date(Number(document.iform.yy.value), Number(document.iform.mm.value), Number(document.iform.dd.value)), new Date(2012, 12, 21));
+  var currentDate = timeAngle(new Date(Number(document.iform.yy.value), Number(document.iform.mm.value), Number(document.iform.dd.value)), new Date(2012, 12, 24));
   var currentStep = Math.floor(currentDate*n_yr_steps/(2*Math.PI)) % n_yr_steps;
   var avg_total = solarFlux * climateIndex["d" + currentStep].PAvg;
   var avg_surface = surfaceAbsorptionVisible(surface) * avg_total;
@@ -438,7 +438,7 @@ function do_calc() {
   //before even applying currents, we have to compute 'underground' layer for any solid-state surface which emits heavily during winter and absorbs slightly during summer
   //note - we could actually just use the water layer's emissions (avg annual) and absorb partially on the surface layer
   for (dt = 0; dt < 86400*82/time; dt++) {
-    var dtOffset = (((dt*time/86400)-(82+2)) * 2 * Math.PI / 366) + 2 * Math.PI;
+    var dtOffset = (((dt*time/86400)-(82+5)) * 2 * Math.PI / 366) + 2 * Math.PI;
     var localTimeStep = Math.floor((currentDate+dtOffset)*n_yr_steps/(2*Math.PI)) % n_yr_steps;
     avg_surface_by_time = surfaceAbsorptionVisible(surface) * solarFlux * climateIndex["d" + localTimeStep].PAvg;
     surface.Radiation = avg_surface_by_time + greenhouseRadiation(atmosphere.SurfaceLayer.Dewpoint, surface);
@@ -459,7 +459,7 @@ function do_calc() {
   //compute diurnal range (2 days)
   var minTemp = 1e30;
   var maxTemp = 0;
-  var ivar = 1 + 0.035*Math.cos(currentDate + timeAngle(new Date(2012, 12, 21), perihelionDate));
+  var ivar = 1 + 0.035*Math.cos(currentDate + timeAngle(new Date(2012, 12, 24), perihelionDate));
   for (dt = 0; dt < 86400*2/time; dt++) {
     var pcurrent = ivar * Math.max(0, Math.sin(zenith_angle(lat, (dt*time/86400)*2*Math.PI, currentDate)));
     var psurface = surfaceAbsorptionVisible(surface) * solarFlux * pcurrent;
