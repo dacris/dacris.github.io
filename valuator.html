@@ -1,0 +1,61 @@
+<html>
+<head>
+<title>Investment Evaluator, v1.0</title>
+<style type="text/css">
+* { font-family: Verdana, Arial, Sans-serif; }
+h1 { font-family: Franklin Gothic Medium, Arial, Sans-serif; }
+table { border: 1px solid #ccc; }
+th { background-color: #e0e0e0; border: 1px solid #ccc; }
+td { border: 1px solid #ccc; }
+.hide { display: none; }
+.show { display: block; }
+</style>
+</head>
+<body>
+<script type="text/javascript">
+function calculate()
+{
+	var money = parseFloat(document.getElementById("money").value);
+	var speps = parseFloat(document.getElementById("speps").value);
+	var rent = parseFloat(document.getElementById("rent").value);
+	var sp500 = Math.sqrt(9.25 * speps * (money / 7));
+	var dow = sp500 * 7.5;
+	var gold = Math.sqrt((money / 4.3) * (dow / 11.4));
+	var silver = gold / 55.695;
+	var palladium = gold / 2.25;
+	var housing = Math.sqrt((rent * 12 * 18) * (money * 24));
+	var wage = silver * 1.8;
+	document.getElementById("sp500").innerHTML = sp500.toFixed(2);
+	document.getElementById("dow").innerHTML = dow.toFixed(2);
+	document.getElementById("gold").innerHTML = gold.toFixed(2);
+	document.getElementById("silver").innerHTML = silver.toFixed(2);
+	document.getElementById("palladium").innerHTML = palladium.toFixed(2);
+	document.getElementById("housing").innerHTML = housing.toFixed(2);
+	document.getElementById("wage").innerHTML = wage.toFixed(2);
+	document.getElementById("results").className = "show";
+}
+</script>
+<h1>Investment Evaluator</h1>
+<div>Copyright &copy; 2021 Dacris Software Inc. <a href="http://www.dacris.com" target="_blank">www.dacris.com</a></div>
+<hr />
+<form action="javascript:calculate();">
+<div>M2 Money Supply ($Billions): <input type="text" id="money" /></div>
+<div>S&P 500 Earnings Per Share/Yr ($): <input type="text" id="speps" /></div>
+<div>Rent for 1 Bedroom / Month ($): <input type="text" id="rent" /></div>
+<input type="submit" />
+</form>
+<div id="results" class="hide">
+<h4>Market Prices</h4>
+<table>
+<tr><th>Asset</th><th>Good Price to BUY</th></tr>
+<tr><td>S&P 500</td><td id="sp500"></td></tr>
+<tr><td>Dow</td><td id="dow"></td></tr>
+<tr><td>Gold</td><td id="gold"></td></tr>
+<tr><td>Silver</td><td id="silver"></td></tr>
+<tr><td>Palladium</td><td id="palladium"></td></tr>
+<tr><td>1-Bedroom</td><td id="housing"></td></tr>
+<tr><td>Hourly Wage</td><td id="wage"></td></tr>
+</table>
+</div>
+</body>
+</html>
