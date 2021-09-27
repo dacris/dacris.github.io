@@ -20,11 +20,11 @@ function calculate()
 	var rent = parseFloat(document.getElementById("rent").value);
 	var sp500 = Math.sqrt(13.6 * speps * (money / 5));
 	var dow = sp500 * 7.5;
-	var gold = Math.sqrt((money / 9) * (dow / 11.4));
+	var gold = Math.sqrt((money / 10.5) * (dow / 11.5));
 	var silver = gold / 55.695;
 	var palladium = gold / 2.25;
 	var housing = Math.sqrt((rent * 12 * 18) * (money * 18.5));
-	var wage = silver * 1.8;
+	var wage = silver * 1.5;
 	document.getElementById("sp500").innerHTML = sp500.toFixed(2);
 	document.getElementById("dow").innerHTML = dow.toFixed(2);
 	document.getElementById("gold").innerHTML = gold.toFixed(2);
