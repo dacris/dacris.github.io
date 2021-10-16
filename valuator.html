@@ -18,7 +18,7 @@ function calculate()
 	var money = parseFloat(document.getElementById("money").value);
 	var speps = parseFloat(document.getElementById("speps").value);
 	var rent = parseFloat(document.getElementById("rent").value);
-	var sp500 = Math.sqrt(13.6 * speps * (money / 5));
+	var sp500 = Math.sqrt(16 * speps * (money / 5));
 	var dow = sp500 * 7.5;
 	var gold = Math.sqrt((money / 11.8) * (dow / 11.5));
 	var silver = gold / 55.695;
