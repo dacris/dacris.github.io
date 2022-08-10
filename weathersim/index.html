@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset=utf-8 />
+<meta charset="utf-8" />
 <title>Dan's Sun Calculator</title>
 <style id="jsbin-css">
 body {
@@ -50,7 +50,7 @@ p em {
 <body>
   
   <form class="wrapper" name="iform">
-    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v2.227</div></h1>
+    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v2.281</div></h1>
     <pre>A powerful idea. <a href="https://dacris.gear.host/frontend/#admin&emissions" target="_blank">Call to Action</a>. <a href="http://web.archive.org/web/20111022111918/http://pubs.giss.nasa.gov/docs/2010/2010_Schmidt_etal_1.pdf" target="_blank">Greenhouse by Schmidt et al (2010, PDF)</a></pre>
     <h2><pre>(C) Dacris Software</pre></h2>
     <div>
@@ -74,7 +74,7 @@ p em {
 <script>
 // ***
 // DAN'S SUN CALCULATOR (100% JAVASCRIPT!)
-// (C) by Dan Tohatan
+// (C) by Dan Tohatan, for Dacris Software Inc.
 //
 // Version History:
 // v1.0 - 11/20/2013 - Daily insolation calc, no heat capacity, broken greenhouse effect (inverted)
@@ -91,6 +91,7 @@ p em {
 // v2.0219 - 2/19/2020 - fixed an error in enthalpy calculation that was causing too rapid spring warming
 // v2.1225 - 2/25/2021 - small adjustment to densityCoefficient increasing accuracy of spring warming, move ref date for year start (solstice) to 12/24 instead of 12/21, fix Australia boundaries
 // v2.227  - 2/7/2022 - added wind flow (30 degrees of longitude average), added Gulf of Mexico
+// v2.281  - 8/10/2022 - added ozone UV shielding effect at middle North latitudes, causing slight albedo-style effect in spring
 
 // (Future) - TODO - Add dynamic cloud cover computations, circulate the air and average out differences between land and water, pole and equator (advection !)
 
@@ -105,6 +106,7 @@ var slp = 9.81 * 5.26e18 / (4 * Math.PI * 6371 * 6371 * 1000000); // Earth radiu
 var surface = {};
 var atmosphere = {};
 var perihelionDate = new Date(2013, 1, 4);
+var maxUVDate = new Date(2013, 10, 15);
 var surfaceData = { "Water": { Color: [0, 40, 160], Albedo: 0.11, Clouds: 0.72, Emissivity: 0.96, Temp: 288, Density: 0, Humidity: 1, Depth: 18.0 },
 "Icecap": { Color: [225, 255, 252], Albedo: 0.40, Clouds: 0.35, Emissivity: 0.92, Temp: 263, Density: 0, Humidity: 1, Depth: 1.75 },
 "Forest": { Color: [40, 160, 0], Albedo: 0.17, Clouds: 0.72, Emissivity: 0.92, Temp: 273, Density: 1300, Humidity: 0.1, Depth: 0.15 },
@@ -255,6 +257,10 @@ function daily_avg(yearAngle, lat) {
   var horizon = -Math.tan(d)*Math.tan(lr);
   var w = Math.acos(horizon > 1 ? 1 : (horizon < -1 ? -1 : horizon)); //sunset_hr
   var ivar = 1 + 0.035*Math.cos(yearAngle + timeAngle(new Date(2012, 12, 24), perihelionDate)); //annual variation of sunlight due to elliptical Earth orbit (perihelion == Jan. 4)
+  if (lat > 33 && lat < 57) {
+    // Apply ozone shielding effect at middle northern latitudes (ozone layer thickness varies from maximum in late March to minimum in late September)
+    ivar = ivar + 0.014*Math.cos(yearAngle + timeAngle(new Date(2012, 12, 24), maxUVDate)) - 0.014;
+  }
   var p_avg = (ivar/Math.PI) * (w * Math.sin(lr) * Math.sin(d) + Math.cos(d) * Math.cos(lr) * Math.sin(w));
   return p_avg;
 }
