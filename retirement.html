@@ -1,0 +1,64 @@
+<html>
+<head>
+<title>Retirement Calculator, v1.0</title>
+<style type="text/css">
+* { font-family: Verdana, Arial, Sans-serif; }
+h1 { font-family: Franklin Gothic Medium, Arial, Sans-serif; }
+table { border: 1px solid #ccc; }
+th { background-color: #e0e0e0; border: 1px solid #ccc; }
+td { border: 1px solid #ccc; }
+.hide { display: none; }
+.show { display: block; }
+</style>
+</head>
+<body>
+<script type="text/javascript">
+function calculate()
+{
+	var riskFraction = 0.4;
+	var money = parseFloat(document.getElementById("money").value);
+	var invested = parseFloat(document.getElementById("invested").value) / riskFraction;
+	var withdraw = parseFloat(document.getElementById("withdraw").value);
+	var portfolio = money * 12 / (withdraw / 100);
+	var savings = portfolio / (invested / 100) - portfolio;
+	var inflationRate = 1.038;
+	var numSavingsYears = Math.log(1 - savings * (1 - inflationRate) / (money * 12)) / Math.log(inflationRate);
+	var growthRate = (100 + withdraw + 2) / 100;
+	var portfolioNow = portfolio / Math.pow(growthRate, numSavingsYears);
+	document.getElementById("portfolio").innerHTML = portfolioNow.toFixed(2);
+	document.getElementById("savings").innerHTML = savings.toFixed(2);
+	document.getElementById("savingsyears").innerHTML = numSavingsYears.toFixed(2);
+	document.getElementById("results").className = "show";
+}
+</script>
+<h1>Retirement Calculator</h1>
+<div>Copyright &copy; 2022 Dacris Software Inc. <a href="http://www.dacris.com" target="_blank">www.dacris.com</a></div>
+<hr />
+<form action="javascript:calculate();">
+<div><div style="float:left; display:inline-block; width:350px;">Required Monthly Income: </div><input type="text" id="money" /></div>
+<div><div style="float:left; display:inline-block; width:350px;">Risk Tolerance (% of Net Worth): </div><input type="text" id="invested" value="20" /></div>
+<div><div style="float:left; display:inline-block; width:350px;">Safe Withdrawal Rate From Portfolio (%)*: </div><input type="text" id="withdraw" /></div>
+<input type="submit" />
+</form>
+<div id="results" class="hide">
+<h4>Requirements for Retirement (Present Value $)</h4>
+<table>
+<tr><th>Asset</th><th>Amount</th></tr>
+<tr><td>Portfolio</td><td id="portfolio"></td></tr>
+<tr><td>Savings</td><td id="savings"></td></tr>
+</table>
+<p>
+Strategy: Withdraw from savings first (income you need), then from portfolio at the safe withdrawal rate.
+<br />Savings will last <span id="savingsyears"></span> years. Portfolio will last 15-30 years, depending on your simulation length.
+</p>
+</div>
+<div>
+<hr />
+* Disclaimer: Not financial advice. Please consult with a qualified professional if you wish to seek advice. This is a very rough calculation. Taxes are not considered.
+<br />
+* Calculate Safe Withdrawal Rate: <a href="https://www.portfoliovisualizer.com/monte-carlo-simulation" target="_blank">Monte Carlo Simulation - Portfolio Visualizer</a>
+<br />
+* No interest is earned on savings.
+</div>
+</body>
+</html>
