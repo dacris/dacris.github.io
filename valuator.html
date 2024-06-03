@@ -19,7 +19,7 @@ function calculate()
 	var year = Math.log(money / 60.0) / Math.log(1.067);
 	var speps = parseFloat(document.getElementById("speps").value);
 	var rent = parseFloat(document.getElementById("rent").value);
-	var sp500 = Math.sqrt(16 * speps * (money / 5));
+	var sp500 = Math.sqrt(16 * speps * ((money / Math.pow(1.01, 90 - year)) / 4.25));
 	var dow = sp500 * 7.5;
 	var gold = Math.sqrt((money / 8.8) * (dow / (15.25 / Math.pow(1.005, 90 - year)))) * Math.pow(1.005, 90 - year);
 	var silver = gold / 55.695;
@@ -37,7 +37,7 @@ function calculate()
 }
 </script>
 <h1>Investment Evaluator</h1>
-<div>Copyright &copy; 2023 Dacris Software Inc. <a href="http://www.dacris.com" target="_blank">www.dacris.com</a></div>
+<div>Copyright &copy; 2024 Dacris Software Inc. <a href="http://www.dacris.com" target="_blank">www.dacris.com</a></div>
 <hr />
 <form action="javascript:calculate();">
 <div>M2 Money Supply ($Billions)*: <input type="text" id="money" /></div>
@@ -63,6 +63,8 @@ function calculate()
 * Based on Average Price with 25% Margin of Safety
 <br />
 * M2SL Provided by Federal Reserve: <a href="https://fred.stlouisfed.org/series/M2SL" target="_blank">St. Louis Fed - M2SL</a>
+<br />
+* Result is Minimum 20-Year Break-Even Adjusted for Inflation
 </div>
 </body>
 </html>
