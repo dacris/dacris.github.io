@@ -284,19 +284,20 @@ function adjustSurface(lat, lng) {
   "Eastasia": {"Polygon": [{y:20,x:60},{y:50,x:100},{y:50,x:140},{y:-10,x:140},{y:-10,x:90},{y:0,x:75},{y:20,x:60}], "Surface": "Forest"},
   "Westafrica": {"Polygon": [{y:18,x:-15},{y:18,x:32},{y:-10,x:45},{y:-35,x:34},{y:-35,x:15},{y:6,x:0},{y:18,x:-15}], "Surface": "Forest"},
   "GulfOfMexico": {"Polygon": [{y:21,x:-96},{y:29,x:-96},{y:30,x:-84},{y:23,x:-82}], "Surface": "Water"},
-  "EastPacific": {"Polygon": [{y:50,x:-150},{y:50,x:-130},{y:38,x:-123},{y:34,x:-121},{y:34,x:-150}], "Surface": "Water", "Upwelling": 0.38 },
+  "NEastPacific": {"Polygon": [{y:53,x:-143},{y:53,x:-130},{y:48,x:-125},{y:48,x:-147}], "Surface": "Water", "Upwelling": 0.45 },
+  "SEastPacific": {"Polygon": [{y:53,x:-143},{y:53,x:-130},{y:38,x:-124},{y:34,x:-121},{y:34,x:-147}], "Surface": "Water", "Upwelling": 0.18 },
   "America": {"Polygon": [{y:67,x:-105},{y:58,x:-55},{y:26,x:-75},{y:-6,x:-30},{y:-53,x:-75},{y:-21,x:-75},{y:-6,x:-85},{y:6,x:-80},{y:22,x:-105},{y:67,x:-105}], "Surface": "Forest"},
   "Desertwest": {"Polygon": [{y:41,x:-135},{y:67,x:-105},{y:22,x:-105},{y:22,x:-120},{y:41,x:-135}], "Surface": "Desert"},
   "Alaska": {"Polygon": [{y:68,x:-180},{y:67,x:-105},{y:41,x:-135},{y:58,x:-145},{y:60,x:-160},{y:58,x:-175},{y:68,x:-180}], "Surface": "Forest"},
   "Antarctica": {"Polygon": [{y:-65,x:-60},{y:-66,x:-180},{y:-91,x:-180},{y:-91,x:180},{y:-66,x:180},{y:-65,x:-60}], "Surface": "Icecap"} };
-  surface = surfaceData["Water"];
+  surface = JSON.parse(JSON.stringify(surfaceData["Water"]));
   surface.Type = "Water";
   for (poly in terrain) {
     var hit = point_in_poly(terrain[poly].Polygon, {x: lng, y: lat});
     if (hit) {
-      surface = surfaceData[terrain[poly].Surface];
+      surface = JSON.parse(JSON.stringify(surfaceData[terrain[poly].Surface]));
       surface.Type = terrain[poly].Surface;
-      surface.Upwelling = terrain[poly].Upwelling ?? 0.0;
+      surface.Upwelling = (terrain[poly].Upwelling === undefined) ? 0.0 : terrain[poly].Upwelling;
       break;
     }
   }
@@ -443,7 +444,10 @@ p250Layer: { Pressure: 0.25, Height: 4400.0, Altitude: 11300, Temp: 221, Dewpoin
   var avg_annual_temp = surfaceData[surfaceType].Temp;
   var deepUndergroundLongwave = surface.Emissivity * blackbody (avg_annual_temp);
   time = 1200;
-  surface = JSON.parse(JSON.stringify(surfaceData[currentSurface]));
+  //surface = JSON.parse(JSON.stringify(surfaceData[currentSurface]));
+  adjustSurface(lat, lng);
+  //console.log(surface.Upwelling);
+  surface.Type = currentSurface;
   surface.DeepTemp = avg_annual_temp;
   surface.avg_annual_temp = avg_annual_temp;
   var avg_surface_by_time = avg_surface;
