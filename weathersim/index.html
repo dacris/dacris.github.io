@@ -50,7 +50,7 @@ p em {
 <body>
   
   <form class="wrapper" name="iform">
-    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v2.4831</div></h1>
+    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v2.491</div></h1>
     <pre>A powerful idea. <a href="https://dacris.gear.host/frontend/#admin&emissions" target="_blank">Call to Action</a>. <a href="http://web.archive.org/web/20111022111918/http://pubs.giss.nasa.gov/docs/2010/2010_Schmidt_etal_1.pdf" target="_blank">Greenhouse by Schmidt et al (2010, PDF)</a></pre>
     <h2><pre>(C) Dacris Software</pre></h2>
     <div>
@@ -70,6 +70,7 @@ p em {
     <div id="surface"></div>
     <div id="pressure"></div>
     <div id="beach"></div>
+    <div id="uv"></div>
   </form>
   
 <script>
@@ -94,6 +95,7 @@ p em {
 // v2.227  - 2/7/2022 - added wind flow (30 degrees of longitude average), added Gulf of Mexico
 // v2.281  - 8/10/2022 - added ozone UV shielding effect at middle North latitudes, causing slight albedo-style effect in spring
 // v2.4831 - 8/31/2024 - added beach weather advice, east Pacific upwelling
+// v2.491  - 9/1/2024  - added UV index
 
 // (Future) - TODO - Add dynamic cloud cover computations, circulate the air and average out differences between land and water, pole and equator (advection !)
 
@@ -476,6 +478,7 @@ p250Layer: { Pressure: 0.25, Height: 4400.0, Altitude: 11300, Temp: 221, Dewpoin
   //compute diurnal range (2 days)
   var minTemp = 1e30;
   var maxTemp = 0;
+  var maxP = 0;
   var ivar = 1 + 0.035*Math.cos(currentDate + timeAngle(new Date(2012, 12, 24), perihelionDate));
   for (dt = 0; dt < 86400*2/time; dt++) {
     var pcurrent = ivar * Math.max(0, Math.sin(zenith_angle(lat, (dt*time/86400)*2*Math.PI, currentDate)));
@@ -491,9 +494,13 @@ p250Layer: { Pressure: 0.25, Height: 4400.0, Altitude: 11300, Temp: 221, Dewpoin
     if (maxTemp < surface.Temp) {
       maxTemp = surface.Temp;
     }
+    if (psurface > maxP) {
+      maxP = psurface;
+    }
   }
   surface.MinTemp = minTemp;
   surface.MaxTemp = maxTemp;
+  surface.MaxP = maxP;
 }
 
 function do_calc() {
@@ -523,20 +530,23 @@ function do_calc() {
   var avgMaxTemp = 0;
   var avgAtmTemp = 0;
   var avgAtm250Temp = 0;
+  var avgMaxP = 0;
   for (i = 0; i < calcResult.surface.length; i++)
   {
     avgMinTemp += calcResult.surface[i].MinTemp / calcResult.surface.length;
-	avgMaxTemp += calcResult.surface[i].MaxTemp / calcResult.surface.length;
-	avgAtmTemp += calcResult.atmosphere[i].SurfaceLayer.Temp / calcResult.surface.length;
-	avgAtm250Temp += calcResult.atmosphere[i].p250Layer.Temp / calcResult.surface.length;
+    avgMaxTemp += calcResult.surface[i].MaxTemp / calcResult.surface.length;
+    avgAtmTemp += calcResult.atmosphere[i].SurfaceLayer.Temp / calcResult.surface.length;
+    avgAtm250Temp += calcResult.atmosphere[i].p250Layer.Temp / calcResult.surface.length;
+    avgMaxP += calcResult.surface[i].MaxP / calcResult.surface.length;
   }
   surface.MinTemp = (avgMinTemp * 0.6 + surface.MinTemp * 0.4);
   surface.MaxTemp = avgMaxTemp;
   if (surface.MinTemp > surface.MaxTemp) { //swap min and max temp if they have become inverted
     var tmp = surface.MinTemp;
-	surface.MinTemp = surface.MaxTemp;
-	surface.MaxTemp = tmp;
+    surface.MinTemp = surface.MaxTemp;
+    surface.MaxTemp = tmp;
   }
+  surface.MaxP = avgMaxP;
   atmosphere.SurfaceLayer.Temp = avgAtmTemp;
   atmosphere.p250Layer.Temp = avgAtm250Temp;
   surface.Temp = (surface.MinTemp + surface.MaxTemp) / 2;
@@ -558,6 +568,7 @@ function do_calc() {
   var avg_surface = surfaceAbsorptionVisible(surface) * avg_total;
   document.getElementById("avg2").innerHTML = "Average Surface Heating: <strong>" + Math.floor(avg_surface*100)/100 + "</strong> W/m2";
   document.getElementById("beach").innerHTML = surface.MinTemp - 273 >= 16 ? (surface.MinTemp - 273 >= 20 ? "Great Beach / Swim Weather" : "Fair Beach / Swim Weather") : "Weather Not For Beach / Swimming";
+  document.getElementById("uv").innerHTML = "UV Index: " + Math.floor(surface.MaxP / 110) + " " + (surface.MaxP > 600 ? "(Burning)" : "(Safe)");
 }
 </script>
 </body>
