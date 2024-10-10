@@ -50,8 +50,8 @@ p em {
 <body>
   
   <form class="wrapper" name="iform">
-    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v2.491</div></h1>
-    <pre>A powerful idea. <a href="https://dacris.gear.host/frontend/#admin&emissions" target="_blank">Call to Action</a>. <a href="http://web.archive.org/web/20111022111918/http://pubs.giss.nasa.gov/docs/2010/2010_Schmidt_etal_1.pdf" target="_blank">Greenhouse by Schmidt et al (2010, PDF)</a></pre>
+    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v2.41010</div></h1>
+    <pre>A powerful idea. <a href="http://web.archive.org/web/20111022111918/http://pubs.giss.nasa.gov/docs/2010/2010_Schmidt_etal_1.pdf" target="_blank">Greenhouse by Schmidt et al (2010, PDF)</a></pre>
     <h2><pre>(C) Dacris Software</pre></h2>
     <div>
       <pre>CO2: <input name="co2" type="text" value="410" size="5" /> ppm (275 = pre-1900s) (<a href="https://www.esrl.noaa.gov/gmd/ccgg/trends/weekly.html" target="_blank">Current Value</a>)</pre>
@@ -96,6 +96,7 @@ p em {
 // v2.281  - 8/10/2022 - added ozone UV shielding effect at middle North latitudes, causing slight albedo-style effect in spring
 // v2.4831 - 8/31/2024 - added beach weather advice, east Pacific upwelling
 // v2.491  - 9/1/2024  - added UV index
+// v2.41010- 10/10/2024- fixed broken link, fixed excess upwelling in Pacific Northwest (45N - 52N)
 
 // (Future) - TODO - Add dynamic cloud cover computations, circulate the air and average out differences between land and water, pole and equator (advection !)
 
@@ -286,7 +287,7 @@ function adjustSurface(lat, lng) {
   "Eastasia": {"Polygon": [{y:20,x:60},{y:50,x:100},{y:50,x:140},{y:-10,x:140},{y:-10,x:90},{y:0,x:75},{y:20,x:60}], "Surface": "Forest"},
   "Westafrica": {"Polygon": [{y:18,x:-15},{y:18,x:32},{y:-10,x:45},{y:-35,x:34},{y:-35,x:15},{y:6,x:0},{y:18,x:-15}], "Surface": "Forest"},
   "GulfOfMexico": {"Polygon": [{y:21,x:-96},{y:29,x:-96},{y:30,x:-84},{y:23,x:-82}], "Surface": "Water"},
-  "NEastPacific": {"Polygon": [{y:53,x:-143},{y:53,x:-130},{y:48,x:-125},{y:48,x:-147}], "Surface": "Water", "Upwelling": 0.45 },
+  "NEastPacific": {"Polygon": [{y:53,x:-143},{y:53,x:-130},{y:45,x:-130},{y:45,x:-147}], "Surface": "Water", "Upwelling": 0.72 },
   "SEastPacific": {"Polygon": [{y:53,x:-143},{y:53,x:-130},{y:38,x:-124},{y:34,x:-121},{y:34,x:-147}], "Surface": "Water", "Upwelling": 0.18 },
   "America": {"Polygon": [{y:67,x:-105},{y:58,x:-55},{y:26,x:-75},{y:-6,x:-30},{y:-53,x:-75},{y:-21,x:-75},{y:-6,x:-85},{y:6,x:-80},{y:22,x:-105},{y:67,x:-105}], "Surface": "Forest"},
   "Desertwest": {"Polygon": [{y:41,x:-135},{y:67,x:-105},{y:22,x:-105},{y:22,x:-120},{y:41,x:-135}], "Surface": "Desert"},
