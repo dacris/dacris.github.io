@@ -50,13 +50,14 @@ p em {
 <body>
   
   <form class="wrapper" name="iform">
-    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v2.41010</div></h1>
+    <h1><img src="thelogo.png" width="64" height="64" alt="Logo" style="margin-left: -96px; margin-top: 4px;" /><div style="margin-top: -58px; margin-left: -18px;">Dan's Sun Calculator v2.41017</div></h1>
     <pre>A powerful idea. <a href="http://web.archive.org/web/20111022111918/http://pubs.giss.nasa.gov/docs/2010/2010_Schmidt_etal_1.pdf" target="_blank">Greenhouse by Schmidt et al (2010, PDF)</a></pre>
+    <div id="countdown"></div>
     <h2><pre>(C) Dacris Software</pre></h2>
     <div>
-      <pre>CO2: <input name="co2" type="text" value="410" size="5" /> ppm (275 = pre-1900s) (<a href="https://www.esrl.noaa.gov/gmd/ccgg/trends/weekly.html" target="_blank">Current Value</a>)</pre>
+      <pre>CO2 ppm-equivalent: <input name="co2" type="text" value="490" size="5" /> ppm (320 = Early 1900s) (<a href="https://gml.noaa.gov/aggi/aggi.html" target="_blank">Current Value</a>)</pre>
       <pre>Lat: <input name="lat" type="text" size="5" value="43.6" />&deg;N Lng: <input name="lng" type="text" size="5" value="-79.3" />&deg;E</pre>
-      <pre>Date:  <input size="4" name="dd" type="text" value="31" /><input size="4" name="mm" type="text" value="12" /><input size="4" name="yy" type="text" value="2022" /></pre>
+      <pre>Date:  <input size="4" name="dd" type="text" value="31" /><input size="4" name="mm" type="text" value="12" /><input size="4" name="yy" type="text" value="2024" /></pre>
       <pre style="margin-top:-8px;">        Day       Month      Year</pre>
     </div>
     <input type="button" value="Calculate" onclick="document.getElementById('msg').innerHTML = 'Calculating...'; self.postMessage(0);" />
@@ -97,6 +98,7 @@ p em {
 // v2.4831 - 8/31/2024 - added beach weather advice, east Pacific upwelling
 // v2.491  - 9/1/2024  - added UV index
 // v2.41010- 10/10/2024- fixed broken link, fixed excess upwelling in Pacific Northwest (45N - 52N)
+// v2.41017- 10/17/2024- added net zero countdown timer based on research
 
 // (Future) - TODO - Add dynamic cloud cover computations, circulate the air and average out differences between land and water, pole and equator (advection !)
 
@@ -571,6 +573,22 @@ function do_calc() {
   document.getElementById("beach").innerHTML = surface.MinTemp - 273 >= 16 ? (surface.MinTemp - 273 >= 20 ? "Great Beach / Swim Weather" : "Fair Beach / Swim Weather") : "Weather Not For Beach / Swimming";
   document.getElementById("uv").innerHTML = "UV Index: " + Math.floor(surface.MaxP / 110) + " " + (surface.MaxP > 600 ? "(Burning)" : "(Safe)");
 }
+
+// Set the date we're counting down to
+var countDownDate = new Date("Dec 31, 2035 23:59:59").getTime();
+
+// Get today's date and time
+var now = new Date().getTime();
+
+// Find the distance between now and the count down date
+var distance = countDownDate - now;
+
+// Time calculations for years and months
+var years = Math.floor(distance / (1000 * 60 * 60 * 24 * 365.2422));
+var months = Math.floor(distance % (1000 * 60 * 60 * 24 * 365.2422) / (1000 * 60 * 60 * 24 * 30.43685));
+
+// Display the result in the element with id="countdown"
+document.getElementById("countdown").innerHTML = "Time left to get to net zero globally and avoid catastrophe: " + years + " years " + months + " months";
 </script>
 </body>
 </html>
