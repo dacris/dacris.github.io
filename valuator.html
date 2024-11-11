@@ -16,18 +16,20 @@ td { border: 1px solid #ccc; }
 function calculate()
 {
 	var money = parseFloat(document.getElementById("money").value);
-	var year = Math.log(money / 60.0) / Math.log(1.067);
+	var year = Math.log(money / 60.0) / Math.log(1.066);
 	var speps = parseFloat(document.getElementById("speps").value);
 	var rent = parseFloat(document.getElementById("rent").value);
 	var sp500 = Math.sqrt(16 * speps * ((money / Math.pow(1.01, 90 - year)) / 4.25));
+	var bitcoin = 11 * sp500;
 	var dow = sp500 * 7.5;
 	var gold = Math.sqrt((money / 8.8) * (dow / (15.25 / Math.pow(1.005, 90 - year)))) * Math.pow(1.005, 90 - year);
-	var silver = gold / 55.695;
-	var palladium = gold / 1.8;
+	var silver = gold / 89.4;
+	var palladium = gold / 2.5;
 	var housing = Math.sqrt((rent * 12 * 15) * (money * 11.0));
-	var wage = silver * 1.5;
+	var wage = silver * 1.6;
 	document.getElementById("sp500").innerHTML = sp500.toFixed(2);
 	document.getElementById("dow").innerHTML = dow.toFixed(2);
+	document.getElementById("bitcoin").innerHTML = bitcoin.toFixed(2);
 	document.getElementById("gold").innerHTML = gold.toFixed(2);
 	document.getElementById("silver").innerHTML = silver.toFixed(2);
 	document.getElementById("palladium").innerHTML = palladium.toFixed(2);
@@ -51,6 +53,7 @@ function calculate()
 <tr><th>Asset</th><th>Good Price to BUY*</th></tr>
 <tr><td>S&P 500</td><td id="sp500"></td></tr>
 <tr><td>Dow</td><td id="dow"></td></tr>
+<tr><td>Bitcoin</td><td id="bitcoin"></td></tr>
 <tr><td>Gold</td><td id="gold"></td></tr>
 <tr><td>Silver</td><td id="silver"></td></tr>
 <tr><td>Palladium</td><td id="palladium"></td></tr>
